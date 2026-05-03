@@ -1,17 +1,20 @@
-# WinProbe
+# OSTrace
 
-A lightweight PowerShell script that fingerprints your Windows installation and detects custom/modified OS builds — no external dependencies, no bloat.
+> A lightweight PowerShell script that fingerprints your Windows installation and detects custom/modified OS builds — no external dependencies, no bloat.
+
+![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue?logo=powershell)
+![Platform](https://img.shields.io/badge/Platform-Windows-informational?logo=windows)
+![Admin](https://img.shields.io/badge/Requires-Administrator-red)
 
 ---
 
-## Output
+## Preview
 
 ```
 Boot Time:       03/05/2026 12:59:25
 Windows Version: Windows 10 Pro (debloated)
 ```
 
-On a stock machine:
 ```
 Boot Time:       03/05/2026 12:59:25
 Windows Version: Windows 10 Pro
@@ -21,8 +24,8 @@ Windows Version: Windows 10 Pro
 
 ## Features
 
-- Displays system boot time in `dd/MM/yyyy HH:mm:ss` format
-- Detects the Windows version and edition cleanly across all versions (7, 8, 10, 11, Server)
+- Displays system boot time in `dd/MM/yyyy HH:mm:ss` local time
+- Detects Windows version and edition across all versions (7, 8, 10, 11, Server)
 - Fingerprints modified/custom Windows builds using tiered heuristic detection
 - Auto-relaunches as Administrator for deeper checks
 - Early-exit logic — stops as soon as a conclusive signal is found
@@ -30,52 +33,10 @@ Windows Version: Windows 10 Pro
 
 ---
 
-## Detection Tiers
-
-WinProbe checks for custom OS indicators in order of reliability, stopping immediately when one is found.
-
-**Tier 1 — Instant, conclusive**
-- WMI OS description set by mod installer
-- Non-standard registered organization
-- Abnormal `ProductName` registry value
-
-**Tier 2 — Fast registry reads**
-- Windows Store forcibly removed via policy
-- Antispyware disabled via policy
-- UAC disabled
-- Tamper Protection off
-- UBR (Update Build Revision) missing or zero
-
-**Tier 3 — Filesystem checks**
-- Windows Defender folder absent
-- Core system binary company name mismatch
-
-**Tier 4 — Elevated checks (requires admin)**
-- Multiple core services disabled
-- Low total service count
-- Abnormally low scheduled task count
-- Low Windows package/component count
-- Low driver count
-- CBS log reporting component store issues
-- Security event log inaccessible
-- No language packs installed
-
----
-
 ## Usage
 
-Run directly in PowerShell:
-
 ```powershell
-.\winprobe.ps1
-```
-
-If not already elevated, the script will automatically relaunch itself as Administrator.
-
-To allow execution if blocked by policy:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass
+powershell -ExecutionPolicy Bypass -Command "Invoke-Expression (Invoke-RestMethod 'https://raw.githubusercontent.com/iKorqo/OSTrace/refs/heads/main/OSTrace')"
 ```
 
 ---
@@ -88,8 +49,13 @@ Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Bypass
 
 ---
 
-## Notes
+## FAQ
 
-- No data is sent anywhere — everything runs locally
-- Detection is heuristic-based; a flagged system is likely modified but not guaranteed
-- A clean result does not guarantee an unmodified OS — some mods leave few traces
+**Why does it need admin?**
+Several checks — like reading the CBS log, querying Windows packages, and accessing protected registry keys — are gated behind elevation. Without admin, roughly half the detections are skipped.
+
+**Is any data sent anywhere?**
+No. Everything runs locally. Nothing is logged, transmitted, or stored.
+
+**Why does it show `(debloated)` instead of the mod name?**
+If the mod didn't leave any named branding (like a custom WMI description or registered organization), WinProbe falls back to describing what it detected behaviorally. Named mods like Atlas OS that brand themselves will show their name directly.
