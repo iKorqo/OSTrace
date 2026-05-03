@@ -1,7 +1,7 @@
 Clear-Host
 
-$os      = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction SilentlyContinue
-$bootStr = if ($os?.LastBootUpTime) { $os.LastBootUpTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") } else { "N/A" }
+$os      = Get-CimInstance -ClassName Win32_OperatingSystem -Namespace root\cimv2 -ErrorAction SilentlyContinue
+$bootStr = if ($os -and $os.LastBootUpTime) { $os.LastBootUpTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") } else { "N/A" }
 
 $caption = $os.Caption
 $buildNum = [System.Environment]::OSVersion.Version.Build
