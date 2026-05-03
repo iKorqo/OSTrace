@@ -4,12 +4,14 @@ $os      = Get-CimInstance -ClassName Win32_OperatingSystem -ErrorAction Silentl
 $bootStr = if ($os?.LastBootUpTime) { $os.LastBootUpTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss") } else { "N/A" }
 
 $caption = $os.Caption
-$baseVer = if ($caption -match "Windows 11") { "Windows 11" }
+$buildNum = [System.Environment]::OSVersion.Version.Build
+$baseVer = if ($caption -match "Windows 11" -or $buildNum -ge 22000) { "Windows 11" }
            elseif ($caption -match "Windows 10") { "Windows 10" }
-           elseif ($caption -match "Windows") { ($caption -replace "Microsoft ","").Trim() }
+           elseif ($caption -match "Server (\d+)") { "Windows Server $($Matches[1])" }
+           elseif ($caption -match "Windows 8\.1") { "Windows 8.1" }
+           elseif ($caption -match "Windows 8") { "Windows 8" }
+           elseif ($caption -match "Windows 7") { "Windows 7" }
            else { "N/A" }
-$edition = ($caption -replace ".*Windows \d+\s*","").Trim()
-if ($edition -and $baseVer -ne "N/A") { $baseVer = "$baseVer $edition" }
 
 $mod = $null
 
